@@ -1,0 +1,38 @@
+version: '1.0'
+kind: pipeline
+metadata:
+  name: dynamic-pipelines/my-js-app-pipeline
+  description: "Docker creation for Javascript app"
+  deprecate: {}
+  project: dynamic-pipelines
+spec:
+  triggers:
+    - type: git
+      repo: kostis-codefresh/dynamic-pipelines
+      events:
+        - push
+      branchRegex: /.*/gi
+      modifiedFilesGlob: 'my-js-app/**'
+      provider: github
+      name: my-trigger
+      context: github-1
+  contexts: []
+  variables:
+    - key: PORT
+      value: '3000'
+  steps:
+    main_clone:
+      title: 'Cloning main repository...'
+      type: git-clone
+      repo: '${{CF_REPO_OWNER}}/${{CF_REPO_NAME}}'
+      revision: '${{CF_REVISION}}'
+      git: github-1    
+    build_my_image:
+      title: Building Docker Image
+      type: build
+      image_name: my-monorepo-js-app
+      working_directory: ./my-js-app
+      tag: '${{CF_BRANCH_TAG_NORMALIZED}}-${{CF_SHORT_REVISION}}'
+      dockerfile: Dockerfile
+  stages: []
+
